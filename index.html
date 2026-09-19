@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Student Information System </h1> 
+    <input id="studentNumber" placeholder="Student Number">
+    <input id="fullName" placeholder="Full Name">
+    <input id="course" placeholder="Course">
+    <input id="email" placeholder="Email">
+
+    <button onclick ="addStudent()" >Save Student</button>
+    <br><br>
+    <div id="studentList" ></div>
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://uecozkpvooethvtcawor.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_yjS2YZNuSYiDedFlfc-URA_2Qf5j5x7"
+    const db = supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+    async function addStudent() {
+        const record = {
+            student_number: studentNumber.value,
+            full_name: fullName.value,
+            course: course.value,
+            email: email.value
+        };
+        const { error } = await db
+            .from("students")
+            .insert(record);
+        
+        if (error){
+            alert(error.message);
+            return;
+        }
+        alert("Student Saved!");
+        loadStudents();
+    }
+    async function loadStudents() {
+        const { data, error} = await db
+            .from("students")
+            .select("*")
+            .order("student_number", {ascending: true});
+        if (error){
+            studentList.innerHTML = error.message;
+            return;
+        }
+
+        studentList.innerHTML = `
+            <table border="1" cellpadding="8" cellspacing="0">
+                    <tr>
+                        <th>Student Number</th>
+                        <th>Full Name</th>
+                        <th>Course</th>
+                        <th>Email</th>
+                    </tr>
+                <tbody>
+                    ${data.map(s => `
+                        <tr>
+                            <td>${s.student_number}</td>
+                            <td>${s.full_name}</td>
+                            <td>${s.course}</td>
+                            <td>${s.email}</td>
+                        </tr>
+                    `).join("")}
+            </table>
+        `;
+    }
+    loadStudents();
+</script>
+</html>
